@@ -1,18 +1,28 @@
 package com.rakitin.event_scheduler.menu;
 
 
+import com.rakitin.event_scheduler.strategy.OperationStrategy;
 import com.rakitin.event_scheduler.strategy.context.Operation;
 import com.rakitin.event_scheduler.strategy.concrete_strategy.CreateEvent;
 import com.rakitin.event_scheduler.strategy.concrete_strategy.DeleteEvent;
 import com.rakitin.event_scheduler.strategy.concrete_strategy.ShowAllEvents;
 import com.rakitin.event_scheduler.strategy.concrete_strategy.ShowAllEventsByDate;
 
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class MainMenu {
 
     private final Scanner scanner;
     private final Operation operation;
+    private static final HashMap<Integer, OperationStrategy> operationStrategy = new HashMap<>();
+
+    static {
+        operationStrategy.put(1, new CreateEvent());
+        operationStrategy.put(2, new ShowAllEvents());
+        operationStrategy.put(3, new ShowAllEventsByDate());
+        operationStrategy.put(4, new DeleteEvent());
+    }
 
     public MainMenu(Scanner scanner, Operation operation) {
         this.scanner = scanner;
@@ -33,41 +43,22 @@ public class MainMenu {
     public void start() {
         if (scanner != null) {
             printMenu();
-            while (true) {
+            int key = 0;
+            do {
                 System.out.print("Выберите действие (введите номер): ");
-                int key = 0;
                 try {
                     key = scanner.nextInt();
-                } catch (RuntimeException e) {
+                    if (key > 0 && key < 5) {
+                        operation.setOperation(operationStrategy.get(key));
+                        operation.executeOperation();
+                    }
+                } catch (Exception e) {
+                    System.out.println("Вы ввели неверное значение меню...");
                     scanner.nextLine();
                 }
-
-                switch (key) {
-                    case 1:
-                        operation.setOperation(new CreateEvent());
-                        operation.executeOperation();
-                        break;
-                    case 2:
-                        operation.setOperation(new ShowAllEvents());
-                        operation.executeOperation();
-                        break;
-                    case 3:
-                        operation.setOperation(new ShowAllEventsByDate());
-                        operation.executeOperation();
-                        break;
-                    case 4:
-                        operation.setOperation(new DeleteEvent());
-                        operation.executeOperation();
-                        break;
-                    case 5:
-                        System.out.println("До свидания!");
-                        System.exit(0);
-                        break;
-                    default:
-                        System.out.println("Вы ввели неверное значение меню...");
-
-                }
-            }
+            } while (key != 5);
+            System.out.println("До свидания!");
         }
     }
 }
+
